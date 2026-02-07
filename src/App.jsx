@@ -4,12 +4,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AnimatedBackground } from "./components/AnimatedBackground";
 import { api } from "./services/api";
-import {
-  SignupPage,
-  LoginPage,
-  OTPPage,
-  Dashboard,
-} from "./pages";
+import { SignupPage, LoginPage, OTPPage, Dashboard } from "./pages";
 
 const buildUserData = (userFromSession) => ({
   _id: userFromSession._id,
@@ -17,8 +12,7 @@ const buildUserData = (userFromSession) => ({
   firstName:
     (userFromSession.fullName?.split(" ")[0] || userFromSession.userName) ??
     "User",
-  lastName:
-    (userFromSession.fullName?.split(" ").slice(1).join(" ")) ?? "",
+  lastName: userFromSession.fullName?.split(" ").slice(1).join(" ") ?? "",
   userName: userFromSession.userName,
   fullName: userFromSession.fullName,
   profilePic: userFromSession.profilePic,
