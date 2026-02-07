@@ -1,4 +1,5 @@
 import React, { useState, createContext, useContext, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import {
   Wallet,
   TrendingUp,
@@ -32,6 +33,13 @@ const useAuth = () => {
   return context;
 };
 
+/** Redirects to / if not logged in; use for dashboard route */
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/" replace />;
+  return children;
+};
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
@@ -50,8 +58,9 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// API Service
-const API_BASE_URL = "http://localhost:3030/cny";
+// API Service — use env in production, fallback for local dev
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3030/cny";
 
 const api = {
   checkSession: async () => {
@@ -1673,7 +1682,17 @@ const Dashboard = () => {
 function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <Routes>
+        <Route path="/" element={<MainApp />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </AuthProvider>
   );
 }
@@ -1735,9 +1754,6 @@ const MainApp = () => {
     checkAuthentication();
   }, [login]);
 
-  console.log("MainApp - Current user:", user);
-  console.log("MainApp - Current view:", currentView);
-
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
@@ -1747,11 +1763,8 @@ const MainApp = () => {
   }
 
   if (user) {
-    console.log("User is logged in, showing Dashboard");
-    return <Dashboard />;
+    return <Navigate to="/dashboard" replace />;
   }
-
-  console.log("User not logged in, showing auth pages");
 
   return (
     <div className="min-h-screen flex">
