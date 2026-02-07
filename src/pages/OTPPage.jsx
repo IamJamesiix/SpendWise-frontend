@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Check } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
@@ -9,8 +10,7 @@ const buildUserData = (userFromSession) => ({
   firstName:
     (userFromSession.fullName?.split(" ")[0] || userFromSession.userName) ??
     "User",
-  lastName:
-    (userFromSession.fullName?.split(" ").slice(1).join(" ")) ?? "",
+  lastName: userFromSession.fullName?.split(" ").slice(1).join(" ") ?? "",
   userName: userFromSession.userName,
   fullName: userFromSession.fullName,
   profilePic: userFromSession.profilePic,
@@ -18,6 +18,7 @@ const buildUserData = (userFromSession) => ({
 
 export const OTPPage = ({ email, onVerified }) => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,6 +68,7 @@ export const OTPPage = ({ email, onVerified }) => {
       if (userFromResponse?._id && userFromResponse?.email) {
         setError("");
         login(buildUserData(userFromResponse));
+        navigate("/dashboard", { replace: true });
       } else if (isEmailVerifiedSuccess) {
         setError("");
         const sessionResult = await api.checkSession();
@@ -74,6 +76,7 @@ export const OTPPage = ({ email, onVerified }) => {
           sessionResult?.user ?? sessionResult?.data ?? sessionResult;
         if (userFromSession?._id && userFromSession?.email) {
           login(buildUserData(userFromSession));
+          navigate("/dashboard", { replace: true });
         } else {
           setError(
             "Verification succeeded but we couldn't load your session. Please log in."

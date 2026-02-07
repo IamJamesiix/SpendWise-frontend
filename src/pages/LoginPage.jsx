@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Mail } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
@@ -7,6 +8,7 @@ import { PasswordInput } from "../components/PasswordInput";
 
 export const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ export const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
           fullName: result.fullName,
           profilePic: result.profilePic,
         });
+        navigate("/dashboard", { replace: true });
       } else {
         setError(
           typeof result === "string"
