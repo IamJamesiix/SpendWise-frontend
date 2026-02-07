@@ -1,0 +1,9 @@
+export { SignupPage } from "./SignupPage";
+export { LoginPage } from "./LoginPage";
+export { OTPPage } from "./OTPPage";
+export { HomePage } from "./HomePage";
+export { BudgetsPage } from "./BudgetsPage";
+export { TaxesPage } from "./TaxesPage";
+export { AIAssistantPage } from "./AIAssistantPage";
+export { ChatPage } from "./ChatPage";
+export { Dashboard } from "./Dashboard";
