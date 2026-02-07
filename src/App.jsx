@@ -57,13 +57,13 @@ const api = {
   checkSession: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include'
+        credentials: "include",
       });
-      
+
       if (!response.ok) {
         return { authenticated: false };
       }
-      
+
       const result = await response.json();
       console.log("Session API response:", result);
       return result;
@@ -94,7 +94,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include', // Important for JWT cookie
+        credentials: "include", // Important for JWT cookie
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -127,7 +127,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include', // Include cookies
+        credentials: "include", // Include cookies
         body: JSON.stringify(data),
       });
       const result = await response.json();
@@ -144,7 +144,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -155,7 +155,7 @@ const api = {
   getBudget: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/budget/getBudget`, {
-        credentials: 'include'
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -168,7 +168,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/budget/setBudget`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(data),
       });
       return await response.json();
@@ -182,19 +182,22 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/chat/ai`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ message }),
       });
       return await response.json();
     } catch (error) {
-      return { success: true, response: "Sorry, I encountered an error. Please try again." };
+      return {
+        success: true,
+        response: "Sorry, I encountered an error. Please try again.",
+      };
     }
   },
 
   getContacts: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat/contacts`, {
-        credentials: 'include'
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -205,7 +208,7 @@ const api = {
   getMessagesByUserId: async (userId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat/${userId}`, {
-        credentials: 'include'
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -218,7 +221,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/chat/${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ message }),
       });
       return await response.json();
@@ -232,7 +235,7 @@ const api = {
       const response = await fetch(`${API_BASE_URL}/tax/addTax`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(data),
       });
       return await response.json();
@@ -244,7 +247,7 @@ const api = {
   getTaxes: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/tax/getTaxes`, {
-        credentials: 'include'
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -256,7 +259,7 @@ const api = {
     try {
       const response = await fetch(`${API_BASE_URL}/tax/deleteTax/${id}`, {
         method: "DELETE",
-        credentials: 'include',
+        credentials: "include",
       });
       return await response.json();
     } catch (error) {
@@ -272,7 +275,7 @@ const GoogleSignInButton = ({ text = "Continue with Google" }) => {
   const handleGoogleLogin = () => {
     setLoading(true);
     // Mark that we're starting OAuth flow
-    sessionStorage.setItem('oauthInProgress', 'true');
+    sessionStorage.setItem("oauthInProgress", "true");
     // Redirect to backend OAuth endpoint
     window.location.href = `${API_BASE_URL}/auth/oauth/login`;
   };
@@ -284,12 +287,24 @@ const GoogleSignInButton = ({ text = "Continue with Google" }) => {
       className="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-4 rounded-xl border-2 border-gray-200 transition duration-200 flex items-center justify-center gap-3 disabled:opacity-50"
     >
       <svg width="20" height="20" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        <path
+          fill="#4285F4"
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        />
+        <path
+          fill="#34A853"
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        />
+        <path
+          fill="#FBBC05"
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        />
+        <path
+          fill="#EA4335"
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        />
       </svg>
-      {loading ? 'Redirecting to Google...' : text}
+      {loading ? "Redirecting to Google..." : text}
     </button>
   );
 };
@@ -308,7 +323,9 @@ const AnimatedBackground = () => {
           <Wallet className="w-20 h-20 mb-4 text-yellow-400" />
         </div>
         <h1 className="text-5xl font-bold mb-4 text-center">Smart Budget</h1>
-        <p className="text-xl text-center mb-16 max-w-md">AI-powered financial planning for smarter decisions</p>
+        <p className="text-xl text-center mb-16 max-w-md">
+          AI-powered financial planning for smarter decisions
+        </p>
         <div className="space-y-8">
           <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl">
             <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-4 rounded-xl">
@@ -316,7 +333,9 @@ const AnimatedBackground = () => {
             </div>
             <div>
               <h3 className="font-semibold text-lg">Track Expenses</h3>
-              <p className="text-sm text-white/80">Monitor spending in real-time</p>
+              <p className="text-sm text-white/80">
+                Monitor spending in real-time
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl">
@@ -334,7 +353,9 @@ const AnimatedBackground = () => {
             </div>
             <div>
               <h3 className="font-semibold text-lg">Plan Gifts</h3>
-              <p className="text-sm text-white/80">Budget for special occasions</p>
+              <p className="text-sm text-white/80">
+                Budget for special occasions
+              </p>
             </div>
           </div>
         </div>
@@ -344,7 +365,12 @@ const AnimatedBackground = () => {
 };
 
 // Password Input
-const PasswordInput = ({ value, onChange, onKeyPress, placeholder = "••••••••" }) => {
+const PasswordInput = ({
+  value,
+  onChange,
+  onKeyPress,
+  placeholder = "••••••••",
+}) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -363,7 +389,11 @@ const PasswordInput = ({ value, onChange, onKeyPress, placeholder = "•••�
         onClick={() => setShowPassword(!showPassword)}
         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
       >
-        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+        {showPassword ? (
+          <EyeOff className="w-5 h-5" />
+        ) : (
+          <Eye className="w-5 h-5" />
+        )}
       </button>
     </div>
   );
@@ -384,7 +414,12 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
     console.log("=== SIGNUP STARTED ===");
     console.log("Form data:", formData);
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.password
+    ) {
       const errorMsg = "All fields are required";
       console.error("Validation error:", errorMsg);
       setError(errorMsg);
@@ -406,7 +441,7 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
       const result = await api.signup(formData);
       console.log("=== SIGNUP RESPONSE ===");
       console.log("Full result:", JSON.stringify(result, null, 2));
-      
+
       // Backend returns { status: "success", message: "...", data: {...} } on success
       // or { status: "error", message: "..." } on failure
       if (result.status === "success") {
@@ -414,7 +449,12 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
         console.log("Email for OTP:", formData.email);
         onSignupSuccess(formData.email);
       } else {
-        const errorMsg = typeof result === 'string' ? result : (result.message || result.error || "Signup failed. Please try again.");
+        const errorMsg =
+          typeof result === "string"
+            ? result
+            : result.message ||
+              result.error ||
+              "Signup failed. Please try again.";
         console.error("❌ Signup failed:", errorMsg);
         setError(errorMsg);
       }
@@ -434,11 +474,15 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
     <div className="w-full max-w-md p-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl border border-purple-500/20">
       <div className="text-center mb-8">
         <h2 className="text-4xl font-bold text-white mb-2">Create Account</h2>
-        <p className="text-gray-400">Join us and start your financial journey</p>
+        <p className="text-gray-400">
+          Join us and start your financial journey
+        </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+          {error}
+        </div>
       )}
 
       <GoogleSignInButton text="Sign up with Google" />
@@ -448,14 +492,18 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
           <div className="w-full border-t border-gray-700"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-gray-900 text-gray-400">Or continue with email</span>
+          <span className="px-4 bg-gray-900 text-gray-400">
+            Or continue with email
+          </span>
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              First Name
+            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
@@ -463,12 +511,16 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
                 placeholder="John"
                 className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
                 value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, firstName: e.target.value })
+                }
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Last Name
+            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
@@ -476,14 +528,18 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
                 placeholder="Doe"
                 className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
                 value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, lastName: e.target.value })
+                }
               />
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Email
+          </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
@@ -491,18 +547,26 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
               placeholder="john@example.com"
               className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Password
+          </label>
           <PasswordInput
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
           />
-          <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Must be at least 8 characters
+          </p>
         </div>
 
         <button
@@ -517,7 +581,10 @@ const SignupPage = ({ onSwitchToLogin, onSignupSuccess }) => {
 
       <p className="text-center text-gray-400 mt-6">
         Already have an account?{" "}
-        <button onClick={onSwitchToLogin} className="text-purple-400 font-semibold hover:underline">
+        <button
+          onClick={onSwitchToLogin}
+          className="text-purple-400 font-semibold hover:underline"
+        >
           Log In
         </button>
       </p>
@@ -551,7 +618,7 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
       const result = await api.login(formData);
       console.log("=== LOGIN RESPONSE ===");
       console.log("Full result:", JSON.stringify(result, null, 2));
-      
+
       // Check if email needs verification
       if (result.needsVerification && result.email) {
         console.log("⚠️ Email not verified, redirecting to OTP page");
@@ -562,15 +629,15 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
         }, 1500);
         return;
       }
-      
+
       // Backend returns user object directly on success: { _id, userName, fullName, email, profilePic }
       if (result._id && result.email) {
         console.log("✅ Login successful!");
         const userData = {
           _id: result._id,
           email: result.email,
-          firstName: result.fullName?.split(' ')[0] || result.userName,
-          lastName: result.fullName?.split(' ').slice(1).join(' ') || "",
+          firstName: result.fullName?.split(" ")[0] || result.userName,
+          lastName: result.fullName?.split(" ").slice(1).join(" ") || "",
           userName: result.userName,
           fullName: result.fullName,
           profilePic: result.profilePic,
@@ -578,7 +645,12 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
         console.log("Setting user data:", userData);
         login(userData);
       } else {
-        const errorMsg = typeof result === 'string' ? result : (result.error || result.message || "Login failed. Please check your credentials.");
+        const errorMsg =
+          typeof result === "string"
+            ? result
+            : result.error ||
+              result.message ||
+              "Login failed. Please check your credentials.";
         console.error("❌ Login failed:", errorMsg);
         setError(errorMsg);
       }
@@ -600,7 +672,9 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+          {error}
+        </div>
       )}
 
       <GoogleSignInButton text="Continue with Google" />
@@ -610,13 +684,17 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
           <div className="w-full border-t border-gray-700"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-gray-900 text-gray-400">Or continue with email</span>
+          <span className="px-4 bg-gray-900 text-gray-400">
+            Or continue with email
+          </span>
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Email
+          </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
@@ -624,17 +702,23 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
               placeholder="john@example.com"
               className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-white placeholder-gray-500"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Password
+          </label>
           <PasswordInput
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
           />
         </div>
@@ -651,7 +735,10 @@ const LoginPage = ({ onSwitchToSignup, onNeedsVerification }) => {
 
       <p className="text-center text-gray-400 mt-6">
         Don't have an account?{" "}
-        <button onClick={onSwitchToSignup} className="text-purple-400 font-semibold hover:underline">
+        <button
+          onClick={onSwitchToSignup}
+          className="text-purple-400 font-semibold hover:underline"
+        >
           Sign Up
         </button>
       </p>
@@ -707,30 +794,66 @@ const OTPPage = ({ email, onVerified }) => {
       const result = await api.verifyEmail({ email, otp: otpCode });
       console.log("=== OTP VERIFICATION RESPONSE ===");
       console.log("Full result:", JSON.stringify(result, null, 2));
-      
-      // Backend returns { message: "...", user: {...} } on success
-      // Backend also sets JWT cookie via generateToken()
-      if (result.error) {
-        const errorMsg = result.error;
-        console.error("❌ Verification failed:", errorMsg);
-        setError(errorMsg);
-      } else if (result.message && result.user) {
-        console.log("✅ Email verified successfully! User:", result.user);
-        // Backend has already set JWT cookie, now log user in on frontend
+
+      // Backend may return user in result.user, result.data, or flat result; success may be in message or (wrongly) in error
+      const userFromResponse =
+        result?.user ??
+        result?.data ??
+        (result?.email && result?._id ? result : null);
+      const successMessage = (
+        result?.message ??
+        result?.error ??
+        ""
+      ).toLowerCase();
+      const isEmailVerifiedSuccess =
+        successMessage.includes("verif") || successMessage.includes("success");
+
+      if (userFromResponse?._id && userFromResponse?.email) {
+        // We have a user object — log in and go to dashboard
+        setError("");
         const userData = {
-          _id: result.user._id,
-          email: result.user.email,
-          firstName: result.user.fullName?.split(' ')[0] || result.user.userName,
-          lastName: result.user.fullName?.split(' ').slice(1).join(' ') || "",
-          userName: result.user.userName,
-          fullName: result.user.fullName,
-          profilePic: result.user.profilePic,
+          _id: userFromResponse._id,
+          email: userFromResponse.email,
+          firstName:
+            (userFromResponse.fullName?.split(" ")[0] ||
+              userFromResponse.userName) ??
+            "User",
+          lastName:
+            userFromResponse.fullName?.split(" ").slice(1).join(" ") ?? "",
+          userName: userFromResponse.userName,
+          fullName: userFromResponse.fullName,
+          profilePic: userFromResponse.profilePic,
         };
-        console.log("Logging in user:", userData);
         login(userData);
-        // Don't need to call onVerified() because login will redirect to dashboard
+      } else if (isEmailVerifiedSuccess) {
+        // Backend said success (e.g. "Email verified") but no user in body — session cookie may be set, fetch current user
+        setError("");
+        const sessionResult = await api.checkSession();
+        const userFromSession =
+          sessionResult?.user ?? sessionResult?.data ?? sessionResult;
+        if (userFromSession?._id && userFromSession?.email) {
+          const userData = {
+            _id: userFromSession._id,
+            email: userFromSession.email,
+            firstName:
+              (userFromSession.fullName?.split(" ")[0] ||
+                userFromSession.userName) ??
+              "User",
+            lastName:
+              userFromSession.fullName?.split(" ").slice(1).join(" ") ?? "",
+            userName: userFromSession.userName,
+            fullName: userFromSession.fullName,
+            profilePic: userFromSession.profilePic,
+          };
+          login(userData);
+        } else {
+          setError(
+            "Verification succeeded but we couldn't load your session. Please log in."
+          );
+        }
+      } else if (result?.error && !isEmailVerifiedSuccess) {
+        setError(result.error);
       } else {
-        console.error("❌ Unexpected response:", result);
         setError("Invalid OTP. Please try again.");
       }
     } catch (err) {
@@ -753,7 +876,7 @@ const OTPPage = ({ email, onVerified }) => {
       const result = await api.resendOTP(email);
       console.log("=== RESEND OTP RESPONSE ===");
       console.log("Full result:", JSON.stringify(result, null, 2));
-      
+
       // Backend returns { message: "Verification code resent" } on success
       // or { error: "..." } on failure
       if (result.error) {
@@ -782,13 +905,16 @@ const OTPPage = ({ email, onVerified }) => {
         </div>
         <h2 className="text-4xl font-bold text-white mb-2">Verify Email</h2>
         <p className="text-gray-400">
-          Enter the 6-digit code sent to<br />
+          Enter the 6-digit code sent to
+          <br />
           <span className="font-semibold text-white">{email}</span>
         </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+          {error}
+        </div>
       )}
 
       <div className="flex gap-2 justify-center mb-6">
@@ -846,7 +972,9 @@ const HomePage = ({ budgets }) => {
             <h3 className="text-white/80 text-sm">Total Budget</h3>
             <Wallet className="w-5 h-5 text-yellow-400" />
           </div>
-          <p className="text-4xl font-bold text-white">${totalBudget.toLocaleString()}</p>
+          <p className="text-4xl font-bold text-white">
+            ${totalBudget.toLocaleString()}
+          </p>
         </div>
 
         <div className="bg-gradient-to-br from-red-600 to-red-800 p-6 rounded-2xl border border-red-500/30">
@@ -854,7 +982,9 @@ const HomePage = ({ budgets }) => {
             <h3 className="text-white/80 text-sm">Total Spent</h3>
             <TrendingUp className="w-5 h-5 text-yellow-400" />
           </div>
-          <p className="text-4xl font-bold text-white">${totalSpent.toLocaleString()}</p>
+          <p className="text-4xl font-bold text-white">
+            ${totalSpent.toLocaleString()}
+          </p>
         </div>
 
         <div className="bg-gradient-to-br from-yellow-600 to-yellow-800 p-6 rounded-2xl border border-yellow-500/30">
@@ -862,7 +992,9 @@ const HomePage = ({ budgets }) => {
             <h3 className="text-white/80 text-sm">Remaining</h3>
             <PieChart className="w-5 h-5 text-purple-400" />
           </div>
-          <p className="text-4xl font-bold text-white">${(totalBudget - totalSpent).toLocaleString()}</p>
+          <p className="text-4xl font-bold text-white">
+            ${(totalBudget - totalSpent).toLocaleString()}
+          </p>
         </div>
       </div>
 
@@ -876,7 +1008,10 @@ const HomePage = ({ budgets }) => {
           <div className="text-center p-4 bg-gray-900/50 rounded-xl">
             <p className="text-gray-400 text-sm mb-1">Savings Rate</p>
             <p className="text-3xl font-bold text-white">
-              {totalBudget > 0 ? Math.round((1 - totalSpent / totalBudget) * 100) : 0}%
+              {totalBudget > 0
+                ? Math.round((1 - totalSpent / totalBudget) * 100)
+                : 0}
+              %
             </p>
           </div>
         </div>
@@ -888,7 +1023,11 @@ const HomePage = ({ budgets }) => {
 // BudgetsPage
 const BudgetsPage = ({ budgets, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
-  const [newBudget, setNewBudget] = useState({ name: "", amount: "", category: "" });
+  const [newBudget, setNewBudget] = useState({
+    name: "",
+    amount: "",
+    category: "",
+  });
 
   const handleCreate = async () => {
     try {
@@ -929,12 +1068,19 @@ const BudgetsPage = ({ budgets, onRefresh }) => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Spent</span>
-                <span className="text-red-400 font-bold">${budget.spent || 0}</span>
+                <span className="text-red-400 font-bold">
+                  ${budget.spent || 0}
+                </span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
                 <div
                   className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full"
-                  style={{ width: `${Math.min(((budget.spent || 0) / budget.amount) * 100, 100)}%` }}
+                  style={{
+                    width: `${Math.min(
+                      ((budget.spent || 0) / budget.amount) * 100,
+                      100
+                    )}%`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -960,7 +1106,9 @@ const BudgetsPage = ({ budgets, onRefresh }) => {
                   placeholder="e.g., Groceries"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newBudget.name}
-                  onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewBudget({ ...newBudget, name: e.target.value })
+                  }
                 />
               </div>
 
@@ -971,7 +1119,9 @@ const BudgetsPage = ({ budgets, onRefresh }) => {
                   placeholder="500"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newBudget.amount}
-                  onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })}
+                  onChange={(e) =>
+                    setNewBudget({ ...newBudget, amount: e.target.value })
+                  }
                 />
               </div>
 
@@ -982,7 +1132,9 @@ const BudgetsPage = ({ budgets, onRefresh }) => {
                   placeholder="e.g., Food"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newBudget.category}
-                  onChange={(e) => setNewBudget({ ...newBudget, category: e.target.value })}
+                  onChange={(e) =>
+                    setNewBudget({ ...newBudget, category: e.target.value })
+                  }
                 />
               </div>
 
@@ -1004,7 +1156,11 @@ const BudgetsPage = ({ budgets, onRefresh }) => {
 const TaxesPage = () => {
   const [taxes, setTaxes] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newTax, setNewTax] = useState({ description: "", amount: "", category: "" });
+  const [newTax, setNewTax] = useState({
+    description: "",
+    amount: "",
+    category: "",
+  });
 
   useEffect(() => {
     loadTaxes();
@@ -1056,19 +1212,29 @@ const TaxesPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {taxes.map((tax, idx) => (
-          <div key={idx} className="bg-gray-800/50 p-6 rounded-2xl border border-purple-500/20">
+          <div
+            key={idx}
+            className="bg-gray-800/50 p-6 rounded-2xl border border-purple-500/20"
+          >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold text-white mb-1">{tax.description}</h3>
+                <h3 className="text-xl font-bold text-white mb-1">
+                  {tax.description}
+                </h3>
                 <p className="text-gray-400 text-sm">{tax.category}</p>
               </div>
-              <button onClick={() => handleDelete(tax._id)} className="text-red-400 hover:text-red-300">
+              <button
+                onClick={() => handleDelete(tax._id)}
+                className="text-red-400 hover:text-red-300"
+              >
                 <Trash2 className="w-5 h-5" />
               </button>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Amount</span>
-              <span className="text-white font-bold text-lg">${tax.amount}</span>
+              <span className="text-white font-bold text-lg">
+                ${tax.amount}
+              </span>
             </div>
           </div>
         ))}
@@ -1092,7 +1258,9 @@ const TaxesPage = () => {
                   placeholder="e.g., Property Tax"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newTax.description}
-                  onChange={(e) => setNewTax({ ...newTax, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewTax({ ...newTax, description: e.target.value })
+                  }
                 />
               </div>
 
@@ -1103,7 +1271,9 @@ const TaxesPage = () => {
                   placeholder="1000"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newTax.amount}
-                  onChange={(e) => setNewTax({ ...newTax, amount: e.target.value })}
+                  onChange={(e) =>
+                    setNewTax({ ...newTax, amount: e.target.value })
+                  }
                 />
               </div>
 
@@ -1114,7 +1284,9 @@ const TaxesPage = () => {
                   placeholder="e.g., Federal"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
                   value={newTax.category}
-                  onChange={(e) => setNewTax({ ...newTax, category: e.target.value })}
+                  onChange={(e) =>
+                    setNewTax({ ...newTax, category: e.target.value })
+                  }
                 />
               </div>
 
@@ -1135,7 +1307,11 @@ const TaxesPage = () => {
 // AIAssistantPage
 const AIAssistantPage = () => {
   const [messages, setMessages] = useState([
-    { role: "assistant", content: "Hello! I'm your AI financial assistant. How can I help you today?" },
+    {
+      role: "assistant",
+      content:
+        "Hello! I'm your AI financial assistant. How can I help you today?",
+    },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -1152,12 +1328,18 @@ const AIAssistantPage = () => {
       const result = await api.chatWithAI(userMessage);
 
       if (result.success) {
-        setMessages((prev) => [...prev, { role: "assistant", content: result.response }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: result.response },
+        ]);
       }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I encountered an error. Please try again." },
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -1171,7 +1353,12 @@ const AIAssistantPage = () => {
       <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-purple-500/20 h-[600px] flex flex-col">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div
+              key={idx}
+              className={`flex ${
+                msg.role === "user" ? "justify-end" : "justify-start"
+              }`}
+            >
               <div
                 className={`max-w-[70%] p-4 rounded-2xl ${
                   msg.role === "user"
@@ -1185,7 +1372,9 @@ const AIAssistantPage = () => {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-gray-700 p-4 rounded-2xl text-white">Thinking...</div>
+              <div className="bg-gray-700 p-4 rounded-2xl text-white">
+                Thinking...
+              </div>
             </div>
           )}
         </div>
@@ -1293,7 +1482,11 @@ const ChatPage = () => {
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex ${msg.senderId === selectedContact._id ? "justify-start" : "justify-end"}`}
+                    className={`flex ${
+                      msg.senderId === selectedContact._id
+                        ? "justify-start"
+                        : "justify-end"
+                    }`}
                   >
                     <div
                       className={`max-w-[70%] p-3 rounded-xl ${
@@ -1377,10 +1570,14 @@ const Dashboard = () => {
               <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-2 rounded-xl">
                 <Wallet className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white">Smart Budget</span>
+              <span className="text-2xl font-bold text-white">
+                Smart Budget
+              </span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-gray-300">Hi, {user?.firstName || "User"}!</span>
+              <span className="text-gray-300">
+                Hi, {user?.firstName || "User"}!
+              </span>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition flex items-center gap-2"
@@ -1460,7 +1657,9 @@ const Dashboard = () => {
 
         <main className="flex-1 p-8">
           {currentPage === "homepage" && <HomePage budgets={budgets} />}
-          {currentPage === "budgets" && <BudgetsPage budgets={budgets} onRefresh={loadBudgets} />}
+          {currentPage === "budgets" && (
+            <BudgetsPage budgets={budgets} onRefresh={loadBudgets} />
+          )}
           {currentPage === "taxes" && <TaxesPage />}
           {currentPage === "ai-assistant" && <AIAssistantPage />}
           {currentPage === "messages" && <ChatPage />}
@@ -1485,47 +1684,50 @@ const MainApp = () => {
   const [pendingEmail, setPendingEmail] = useState("");
   const [checkingAuth, setCheckingAuth] = useState(false); // Start false by default
 
-  // Check for OAuth callback or existing session on mount
+  // Check for existing session on every load (covers OAuth callback and returning users)
   useEffect(() => {
     const checkAuthentication = async () => {
-      const path = window.location.pathname;
       const urlParams = new URLSearchParams(window.location.search);
-      const oauthSuccess = urlParams.get('oauth');
-      const wasOAuthInProgress = sessionStorage.getItem('oauthInProgress');
-      
-      // Only check session if we're coming back from OAuth
-      if (path === '/dashboard' || oauthSuccess === 'success' || wasOAuthInProgress) {
-        console.log("=== CHECKING AUTHENTICATION ===");
-        console.log("OAuth callback detected, checking session...");
+      const oauthSuccess = urlParams.get("oauth");
+      const wasOAuthInProgress = sessionStorage.getItem("oauthInProgress");
+      const isOAuthReturn = oauthSuccess === "success" || wasOAuthInProgress;
+
+      if (isOAuthReturn) {
         setCheckingAuth(true);
-        sessionStorage.removeItem('oauthInProgress');
-        
-        try {
-          const result = await api.checkSession();
-          console.log("Session check result:", result);
-          
-          if (result._id && result.email) {
-            console.log("✅ OAuth successful! Logging in user");
-            const userData = {
-              _id: result._id,
-              email: result.email,
-              firstName: result.fullName?.split(' ')[0] || result.userName,
-              lastName: result.fullName?.split(' ').slice(1).join(' ') || "",
-              userName: result.userName,
-              fullName: result.fullName,
-              profilePic: result.profilePic,
-            };
-            login(userData);
-            window.history.replaceState({}, document.title, '/');
-          } else {
-            console.log("⚠️ No user data from session check");
-            console.log("This is normal if you haven't set up /auth/me endpoint yet");
-          }
-        } catch (error) {
-          console.error("Session check failed:", error);
-          console.log("This is expected if /auth/me endpoint doesn't exist yet");
+        sessionStorage.removeItem("oauthInProgress");
+      }
+
+      try {
+        const result = await api.checkSession();
+        // Backend may return user as { _id, email, ... } or { user: { _id, email, ... } } or { data: { ... } }
+        const userFromSession = result?.user ?? result?.data ?? result;
+        const hasUser =
+          userFromSession && userFromSession._id && userFromSession.email;
+
+        if (hasUser) {
+          const userData = {
+            _id: userFromSession._id,
+            email: userFromSession.email,
+            firstName:
+              (userFromSession.fullName?.split(" ")[0] ||
+                userFromSession.userName) ??
+              "User",
+            lastName:
+              userFromSession.fullName?.split(" ").slice(1).join(" ") ?? "",
+            userName: userFromSession.userName,
+            fullName: userFromSession.fullName,
+            profilePic: userFromSession.profilePic,
+          };
+          login(userData);
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname || "/"
+          );
         }
-        
+      } catch (error) {
+        console.error("Session check failed:", error);
+      } finally {
         setCheckingAuth(false);
       }
     };
@@ -1569,7 +1771,7 @@ const MainApp = () => {
         )}
 
         {currentView === "login" && (
-          <LoginPage 
+          <LoginPage
             onSwitchToSignup={() => setCurrentView("signup")}
             onNeedsVerification={(email) => {
               setPendingEmail(email);
