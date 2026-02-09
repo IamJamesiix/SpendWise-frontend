@@ -15,6 +15,27 @@ const buildUserData = (userFromSession) => ({
 });
 
 /**
+ * Try to pull a user object out of various possible backend response shapes.
+ * Supports:
+ * - { user: {...} }
+ * - { data: { user: {...} } }
+ * - { data: {...user fields...} }
+ * - { _id, email, ... } or { id, email, ... } at the top level
+ */
+const extractUserFromSession = (result) => {
+  if (!result || typeof result !== "object") return null;
+
+  if (result.user && result.user.email) return result.user;
+  if (result.data?.user && result.data.user.email) return result.data.user;
+  if (result.data && result.data.email) return result.data;
+
+  if (result._id && result.email) return result;
+  if (result.id && result.email) return result;
+
+  return null;
+};
+
+/**
  * Runs session check once on app load so we restore the user even when
  * landing on /dashboard (e.g. after OAuth redirect). Renders children
  * after the check is done.
@@ -32,10 +53,9 @@ export const AuthLoader = ({ children }) => {
     const restoreSession = async () => {
       try {
         const result = await api.checkSession();
-        const userFromSession = result?.user ?? result?.data ?? result;
-        const hasUser = userFromSession?._id && userFromSession?.email;
+        const userFromSession = extractUserFromSession(result);
 
-        if (hasUser) {
+        if (userFromSession) {
           login(buildUserData(userFromSession));
           const path = window.location.pathname || "/";
           const cleanUrl = path + window.location.hash;

@@ -33,7 +33,7 @@ const MainApp = () => {
         )}
 
         {currentView === "login" && (
-          <LoginPage
+          <LoginPage 
             onSwitchToSignup={() => setCurrentView("signup")}
             onNeedsVerification={(email) => {
               setPendingEmail(email);
