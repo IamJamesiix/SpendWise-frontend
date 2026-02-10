@@ -7,3 +7,4 @@ export { TaxesPage } from "./TaxesPage";
 export { AIAssistantPage } from "./AIAssistantPage";
 export { ChatPage } from "./ChatPage";
 export { Dashboard } from "./Dashboard";
+export { ProfilePage } from "./ProfilePage";

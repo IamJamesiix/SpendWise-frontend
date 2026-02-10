@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "sonner": "^1.7.2",
     "@tanstack/react-query": "^5.62.8",
     "@tanstack/react-query-devtools": "^5.62.8",
     "lucide-react": "^0.562.0",

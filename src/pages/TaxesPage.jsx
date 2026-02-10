@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, X, Trash2, FileText, DollarSign, Tag } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "../services/api";
 
 export const TaxesPage = () => {
@@ -16,9 +17,18 @@ export const TaxesPage = () => {
   const loadTaxes = async () => {
     try {
       const result = await api.getTaxes();
-      if (result.success) setTaxes(result.taxes || []);
+      if (Array.isArray(result)) {
+        setTaxes(result);
+      } else if (result?.success) {
+        setTaxes(result.taxes || []);
+      } else {
+        toast.error(
+          result?.error || result?.message || "Failed to load tax entries"
+        );
+      }
     } catch (err) {
-      console.error("Failed to load taxes");
+      console.error("Failed to load taxes", err);
+      toast.error("Failed to load tax entries");
     }
   };
 
@@ -30,12 +40,26 @@ export const TaxesPage = () => {
     if (!newTax.description || !newTax.amount) return;
     setLoading(true);
     try {
-      await api.addTax(newTax);
-      setShowModal(false);
-      setNewTax({ description: "", amount: "", category: "" });
-      loadTaxes();
+      const payload = {
+        // Backend maps description -> title
+        description: newTax.description,
+        amount: Number(newTax.amount),
+        category: newTax.category,
+      };
+
+      const result = await api.addTax(payload);
+
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Tax entry added");
+        setShowModal(false);
+        setNewTax({ description: "", amount: "", category: "" });
+        loadTaxes();
+      }
     } catch (err) {
-      console.error("Failed to create tax entry");
+      console.error("Failed to create tax entry", err);
+      toast.error("Failed to create tax entry");
     } finally {
       setLoading(false);
     }
@@ -44,10 +68,16 @@ export const TaxesPage = () => {
   const handleDelete = async (id) => {
     setDeleting(id);
     try {
-      await api.deleteTax(id);
-      loadTaxes();
+      const result = await api.deleteTax(id);
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Tax entry deleted");
+        loadTaxes();
+      }
     } catch (err) {
-      console.error("Failed to delete tax");
+      console.error("Failed to delete tax", err);
+      toast.error("Failed to delete tax");
     } finally {
       setDeleting(null);
     }
@@ -66,7 +96,11 @@ export const TaxesPage = () => {
           </h1>
           <p className="text-gray-400 text-sm mt-1">
             {taxes.length > 0
-              ? `${taxes.length} entr${taxes.length !== 1 ? "ies" : "y"} across ${categories.length} categor${categories.length !== 1 ? "ies" : "y"}`
+              ? `${taxes.length} entr${
+                  taxes.length !== 1 ? "ies" : "y"
+                } across ${categories.length} categor${
+                  categories.length !== 1 ? "ies" : "y"
+                }`
               : "Track your tax entries and deductions"}
           </p>
         </div>

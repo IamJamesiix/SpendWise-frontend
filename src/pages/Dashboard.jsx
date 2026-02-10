@@ -7,6 +7,7 @@ import {
   FileText,
   Brain,
   MessageCircle,
+  User,
   Menu,
   X,
   ChevronRight,
@@ -18,6 +19,7 @@ import { BudgetsPage } from "./BudgetsPage";
 import { TaxesPage } from "./TaxesPage";
 import { AIAssistantPage } from "./AIAssistantPage";
 import { ChatPage } from "./ChatPage";
+import { ProfilePage } from "./ProfilePage";
 
 export const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -58,6 +60,7 @@ export const Dashboard = () => {
     { id: "taxes", label: "Tax Tracker", icon: FileText },
     { id: "ai-assistant", label: "AI Assistant", icon: Brain },
     { id: "messages", label: "Messages", icon: MessageCircle },
+    { id: "profile", label: "Profile", icon: User },
   ];
 
   const getInitials = () => {
@@ -200,6 +203,7 @@ export const Dashboard = () => {
             {currentPage === "taxes" && <TaxesPage />}
             {currentPage === "ai-assistant" && <AIAssistantPage />}
             {currentPage === "messages" && <ChatPage />}
+            {currentPage === "profile" && <ProfilePage />}
           </div>
         </main>
       </div>
