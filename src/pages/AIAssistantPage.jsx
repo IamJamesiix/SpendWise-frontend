@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Brain, User, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "../services/api";
 
 const INITIAL_MESSAGE = {
@@ -12,7 +13,6 @@ export const AIAssistantPage = () => {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errorToast, setErrorToast] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -23,13 +23,6 @@ export const AIAssistantPage = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, loading]);
-
-  // Auto-hide error toast after a short delay
-  useEffect(() => {
-    if (!errorToast) return;
-    const id = setTimeout(() => setErrorToast(null), 8000);
-    return () => clearTimeout(id);
-  }, [errorToast]);
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -42,10 +35,10 @@ export const AIAssistantPage = () => {
       // Backend may return either a success payload or an error like:
       // { "error": "Failed to get AI response", "details": "OpenAI API quota exceeded. Please check your billing." }
       if (result?.error) {
-        const message = result.details
-          ? `${result.error}: ${result.details}`
-          : result.error;
-        setErrorToast(message);
+        const title = result.error || "AI error";
+        const description = result.details || undefined;
+        toast.error(title, description ? { description } : undefined);
+        const message = description ? `${title}: ${description}` : title;
         setMessages((m) => [
           ...m,
           {
@@ -61,7 +54,7 @@ export const AIAssistantPage = () => {
       } else {
         const fallback =
           "Failed to get AI response. Please try again in a moment.";
-        setErrorToast(fallback);
+        toast.error("AI error", { description: fallback });
         setMessages((m) => [
           ...m,
           {
@@ -72,8 +65,8 @@ export const AIAssistantPage = () => {
       }
     } catch (err) {
       const fallback =
-        "Sorry, I encountered a network error talking to the AI. Please try again.";
-      setErrorToast(fallback);
+        "I couldn't reach the AI service due to a network error. Please try again.";
+      toast.error("Network error", { description: fallback });
       setMessages((m) => [
         ...m,
         {
@@ -109,20 +102,6 @@ export const AIAssistantPage = () => {
           Your personal financial advisor powered by AI
         </p>
       </div>
-
-      {/* Backend error toast */}
-      {errorToast && (
-        <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200 flex items-start justify-between gap-2">
-          <span className="pr-2">{errorToast}</span>
-          <button
-            type="button"
-            onClick={() => setErrorToast(null)}
-            className="ml-1 text-red-300 hover:text-red-100"
-          >
-            ×
-          </button>
-        </div>
-      )}
 
       {/* Chat container */}
       <div className="flex-1 bg-gray-900 rounded-2xl border border-gray-800 flex flex-col overflow-hidden min-h-0">
