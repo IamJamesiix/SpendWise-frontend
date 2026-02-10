@@ -1,19 +1,30 @@
-import React, { useState } from "react";
-import { Send } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Send, Brain, User, Sparkles } from "lucide-react";
 import { api } from "../services/api";
 
 const INITIAL_MESSAGE = {
   role: "assistant",
-  content: "Hello! I'm your AI financial assistant. How can I help you today?",
+  content:
+    "Hello! I'm your AI financial assistant. I can help you with budgeting advice, savings tips, tax questions, and more. How can I help you today?",
 };
 
 export const AIAssistantPage = () => {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
     const userMessage = input;
     setMessages((m) => [...m, { role: "user", content: userMessage }]);
     setInput("");
@@ -21,61 +32,142 @@ export const AIAssistantPage = () => {
     try {
       const result = await api.chatWithAI(userMessage);
       if (result.success) {
-        setMessages((m) => [...m, { role: "assistant", content: result.response }]);
+        setMessages((m) => [
+          ...m,
+          { role: "assistant", content: result.response },
+        ]);
       }
     } catch (err) {
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "Sorry, I encountered an error. Please try again." },
+        {
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
       ]);
     } finally {
       setLoading(false);
+      inputRef.current?.focus();
     }
   };
 
+  const suggestions = [
+    "How can I save more money?",
+    "Tips for reducing expenses",
+    "How should I budget my income?",
+  ];
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-4xl font-bold text-white mb-8">AI Assistant</h1>
-      <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl border border-purple-500/20 h-[600px] flex flex-col">
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <div className="fade-in flex flex-col h-[calc(100vh-8rem)]">
+      {/* Header */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="bg-purple-500/15 p-2 rounded-xl">
+            <Brain className="w-5 h-5 text-purple-400" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            AI Assistant
+          </h1>
+        </div>
+        <p className="text-gray-400 text-sm ml-12">
+          Your personal financial advisor powered by AI
+        </p>
+      </div>
+
+      {/* Chat container */}
+      <div className="flex-1 bg-gray-900 rounded-2xl border border-gray-800 flex flex-col overflow-hidden min-h-0">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex gap-3 ${
+                msg.role === "user" ? "flex-row-reverse" : "flex-row"
+              }`}
             >
+              {/* Avatar */}
               <div
-                className={`max-w-[70%] p-4 rounded-2xl ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                   msg.role === "user"
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-                    : "bg-gray-700 text-white"
+                    ? "bg-purple-600"
+                    : "bg-gray-800 border border-gray-700"
+                }`}
+              >
+                {msg.role === "user" ? (
+                  <User className="w-4 h-4 text-white" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                )}
+              </div>
+
+              {/* Message bubble */}
+              <div
+                className={`max-w-[80%] sm:max-w-[70%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-purple-600 text-white rounded-tr-md"
+                    : "bg-gray-800 text-gray-200 border border-gray-700 rounded-tl-md"
                 }`}
               >
                 {msg.content}
               </div>
             </div>
           ))}
+
+          {/* Typing indicator */}
           {loading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-700 p-4 rounded-2xl text-white">Thinking...</div>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+              </div>
+              <div className="bg-gray-800 border border-gray-700 px-4 py-3 rounded-2xl rounded-tl-md">
+                <div className="flex gap-1.5">
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                  <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                </div>
+              </div>
             </div>
           )}
+
+          {/* Quick suggestions (show only at start) */}
+          {messages.length === 1 && !loading && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {suggestions.map((s, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setInput(s);
+                    inputRef.current?.focus();
+                  }}
+                  className="px-3 py-2 text-xs text-gray-400 bg-gray-800 border border-gray-700 rounded-xl hover:border-purple-500/40 hover:text-purple-300 transition-all"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
-        <div className="p-4 border-t border-purple-500/20">
+
+        {/* Input */}
+        <div className="p-3 sm:p-4 border-t border-gray-800">
           <div className="flex gap-2">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Ask me anything about your finances..."
-              className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white focus:ring-2 focus:ring-purple-500 outline-none"
+              className="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
             />
             <button
               onClick={sendMessage}
-              disabled={loading}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 rounded-xl disabled:opacity-50"
+              disabled={loading || !input.trim()}
+              className="bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed p-2.5 rounded-xl transition-colors shrink-0"
             >
-              <Send className="w-6 h-6 text-white" />
+              <Send className="w-5 h-5 text-white" />
             </button>
           </div>
         </div>
