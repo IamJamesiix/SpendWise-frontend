@@ -85,18 +85,19 @@ export const ProfilePage = () => {
       {/* Profile card */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
         {/* Banner */}
-        <div className="h-28 sm:h-36 bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 relative">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-12 w-32 h-32 bg-white/5 rounded-full translate-y-1/3" />
+        <div className="h-32 sm:h-40 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 relative overflow-hidden">
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
+          <div className="absolute -bottom-8 -right-8 w-36 h-36 bg-white/5 rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/[0.03] rounded-full" />
         </div>
 
         {/* Avatar + info */}
-        <div className="px-5 sm:px-8 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 sm:-mt-12">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white border-4 border-gray-900 shrink-0 shadow-xl">
+        <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-14">
+          <div className="flex items-end gap-4 sm:gap-5">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white border-4 border-gray-900 shrink-0 shadow-xl shadow-purple-500/20">
               {initials}
             </div>
-            <div className="flex-1 min-w-0 pb-1">
+            <div className="flex-1 min-w-0 pb-0.5 sm:pb-1">
               <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
                 {fullName}
               </h2>

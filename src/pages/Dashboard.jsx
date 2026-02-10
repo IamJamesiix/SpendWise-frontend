@@ -12,6 +12,8 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 import { HomePage } from "./HomePage";
@@ -23,9 +25,12 @@ import { ProfilePage } from "./ProfilePage";
 
 export const Dashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState("homepage");
   const [budgets, setBudgets] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const loadBudgets = async () => {
     try {
@@ -40,13 +45,24 @@ export const Dashboard = () => {
     loadBudgets();
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogoutConfirm = async () => {
+    setLoggingOut(true);
     try {
-      await api.logout();
+      const result = await api.logout();
+      if (result?.error) {
+        toast.error(result.error || "Failed to log out");
+      } else {
+        toast.success("Logged out");
+      }
     } catch (err) {
       console.error("Logout error:", err);
+      toast.error("Failed to log out");
+    } finally {
+      logout();
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+      navigate("/", { replace: true });
     }
-    logout();
   };
 
   const navigateTo = (page) => {
@@ -153,7 +169,7 @@ export const Dashboard = () => {
               </p>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutConfirm(true)}
               className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all shrink-0"
               title="Logout"
             >
@@ -207,6 +223,48 @@ export const Dashboard = () => {
           </div>
         </main>
       </div>
+
+      {/* Logout confirmation modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-sm">
+            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Log out</h2>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              <p className="text-sm text-gray-300">
+                Are you sure you want to log out of your SpendWise account?
+              </p>
+              <p className="text-xs text-gray-500">
+                You'll need to sign in again to access your dashboard and
+                financial data.
+              </p>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                disabled={loggingOut}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogoutConfirm}
+                disabled={loggingOut}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-xl transition-colors disabled:opacity-60"
+              >
+                {loggingOut ? "Logging out..." : "Log out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
