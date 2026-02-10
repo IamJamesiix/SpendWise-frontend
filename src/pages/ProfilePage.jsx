@@ -7,11 +7,13 @@ import {
   FileText,
   LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 
 export const ProfilePage = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     budgetsCount: 0,
     taxesCount: 0,
@@ -19,6 +21,7 @@ export const ProfilePage = () => {
     totalTax: 0,
   });
   const [loadingStats, setLoadingStats] = useState(true);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -37,13 +40,15 @@ export const ProfilePage = () => {
           budgetsCount: budgetsList.length,
           taxesCount: taxesList.length,
           totalBudget: budgetsList.reduce((s, b) => s + (b.amount || 0), 0),
-          totalTax: taxesList.reduce(
-            (s, t) => s + (Number(t.amount) || 0),
-            0
-          ),
+          totalTax: taxesList.reduce((s, t) => s + (Number(t.amount) || 0), 0),
         });
       } catch {
-        setStats({ budgetsCount: 0, taxesCount: 0, totalBudget: 0, totalTax: 0 });
+        setStats({
+          budgetsCount: 0,
+          taxesCount: 0,
+          totalBudget: 0,
+          totalTax: 0,
+        });
       } finally {
         setLoadingStats(false);
       }
@@ -57,8 +62,11 @@ export const ProfilePage = () => {
       await api.logout();
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      // Clear client auth state and send user to login screen
+      logout();
+      navigate("/", { replace: true });
     }
-    logout();
   };
 
   const initials = (() => {
@@ -83,21 +91,21 @@ export const ProfilePage = () => {
       </div>
 
       {/* Profile card */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+      <div className="bg-gray-900 rounded-3xl border border-gray-800 overflow-hidden">
         {/* Banner */}
-        <div className="h-32 sm:h-40 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 relative overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/5 rounded-full" />
-          <div className="absolute -bottom-8 -right-8 w-36 h-36 bg-white/5 rounded-full" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/[0.03] rounded-full" />
+        <div className="relative z-0 h-32 sm:h-44 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600">
+          <div className="absolute -top-12 -left-12 w-40 h-40 bg-white/5 rounded-full" />
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/[0.04] rounded-full" />
         </div>
 
         {/* Avatar + info */}
-        <div className="px-5 sm:px-8 pb-6 -mt-12 sm:-mt-14">
-          <div className="flex items-end gap-4 sm:gap-5">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white border-4 border-gray-900 shrink-0 shadow-xl shadow-purple-500/20">
+        <div className="px-5 sm:px-8 pb-6 pt-4">
+          <div className="flex items-center gap-4 sm:gap-5 relative">
+            <div className="z-10 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white border-4 border-gray-900 shrink-0 shadow-xl shadow-purple-500/20 -mt-12 sm:-mt-14">
               {initials}
             </div>
-            <div className="flex-1 min-w-0 pb-0.5 sm:pb-1">
+            <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
                 {fullName}
               </h2>
@@ -191,9 +199,7 @@ export const ProfilePage = () => {
             </div>
             <p className="text-xs text-gray-500 mb-1">Total Budgeted</p>
             <p className="text-2xl sm:text-3xl font-bold text-emerald-400">
-              {loadingStats
-                ? "..."
-                : `$${stats.totalBudget.toLocaleString()}`}
+              {loadingStats ? "..." : `$${stats.totalBudget.toLocaleString()}`}
             </p>
             <p className="text-xs text-gray-500 mt-1">across all budgets</p>
           </div>
@@ -222,13 +228,49 @@ export const ProfilePage = () => {
           </p>
         </div>
         <button
-          onClick={handleLogout}
+          type="button"
+          onClick={() => setShowLogoutModal(true)}
           className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-red-400 bg-red-400/10 hover:bg-red-400/20 border border-red-500/20 rounded-xl transition-colors w-fit"
         >
           <LogOut className="w-4 h-4" />
           Logout
         </button>
       </div>
+
+      {/* Logout confirmation modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              Log out of SpendWise?
+            </h3>
+            <p className="text-xs text-gray-400 mb-5">
+              You’ll need to sign in again to access your budgets, tax records,
+              and AI assistant.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-xl border border-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setShowLogoutModal(false);
+                  await handleLogout();
+                }}
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-red-100 bg-red-600 hover:bg-red-500 rounded-xl border border-red-500/40 transition-colors flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
