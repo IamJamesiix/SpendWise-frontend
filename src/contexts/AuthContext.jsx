@@ -1,6 +1,7 @@
-import React, { useState, createContext, useContext, useCallback } from "react";
+import React, { createContext, useContext, useCallback } from "react";
+import { useAuthStore } from "../stores/authStore";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -9,15 +10,18 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const { user, setUser, clearUser } = useAuthStore();
 
-  const login = useCallback((userData) => {
-    setUser(userData);
-  }, []);
+  const login = useCallback(
+    (userData) => {
+      setUser(userData);
+    },
+    [setUser]
+  );
 
   const logout = useCallback(() => {
-    setUser(null);
-  }, []);
+    clearUser();
+  }, [clearUser]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

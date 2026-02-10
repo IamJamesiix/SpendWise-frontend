@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "./AuthContext";
 
@@ -42,36 +43,28 @@ const extractUserFromSession = (result) => {
  */
 export const AuthLoader = ({ children }) => {
   const { user, login } = useAuth();
-  const [checking, setChecking] = useState(true);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["session"],
+    queryFn: api.checkSession,
+    enabled: !user,
+  });
 
   useEffect(() => {
-    if (user) {
-      setChecking(false);
-      return;
+    if (!data || user) return;
+
+    const userFromSession = extractUserFromSession(data);
+    if (userFromSession) {
+      login(buildUserData(userFromSession));
+
+      // Clean up ?oauth=success and similar noise from the URL
+      const path = window.location.pathname || "/";
+      const cleanUrl = path + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
     }
+  }, [data, user, login]);
 
-    const restoreSession = async () => {
-      try {
-        const result = await api.checkSession();
-        const userFromSession = extractUserFromSession(result);
-
-        if (userFromSession) {
-          login(buildUserData(userFromSession));
-          const path = window.location.pathname || "/";
-          const cleanUrl = path + window.location.hash;
-          window.history.replaceState({}, document.title, cleanUrl);
-        }
-      } catch (err) {
-        console.error("Session check failed:", err);
-      } finally {
-        setChecking(false);
-      }
-    };
-
-    restoreSession();
-  }, [user, login]);
-
-  if (checking) {
+  if (!user && isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
         <div className="text-white text-xl">Checking authentication...</div>
