@@ -12,6 +12,7 @@ export const AIAssistantPage = () => {
   const [messages, setMessages] = useState([INITIAL_MESSAGE]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorToast, setErrorToast] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -23,6 +24,13 @@ export const AIAssistantPage = () => {
     scrollToBottom();
   }, [messages, loading]);
 
+  // Auto-hide error toast after a short delay
+  useEffect(() => {
+    if (!errorToast) return;
+    const id = setTimeout(() => setErrorToast(null), 8000);
+    return () => clearTimeout(id);
+  }, [errorToast]);
+
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
     const userMessage = input;
@@ -31,18 +39,46 @@ export const AIAssistantPage = () => {
     setLoading(true);
     try {
       const result = await api.chatWithAI(userMessage);
-      if (result.success) {
+      // Backend may return either a success payload or an error like:
+      // { "error": "Failed to get AI response", "details": "OpenAI API quota exceeded. Please check your billing." }
+      if (result?.error) {
+        const message = result.details
+          ? `${result.error}: ${result.details}`
+          : result.error;
+        setErrorToast(message);
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            content: message,
+          },
+        ]);
+      } else if (result?.success) {
         setMessages((m) => [
           ...m,
           { role: "assistant", content: result.response },
         ]);
+      } else {
+        const fallback =
+          "Failed to get AI response. Please try again in a moment.";
+        setErrorToast(fallback);
+        setMessages((m) => [
+          ...m,
+          {
+            role: "assistant",
+            content: fallback,
+          },
+        ]);
       }
     } catch (err) {
+      const fallback =
+        "Sorry, I encountered a network error talking to the AI. Please try again.";
+      setErrorToast(fallback);
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          content: "Sorry, I encountered an error. Please try again.",
+          content: fallback,
         },
       ]);
     } finally {
@@ -73,6 +109,20 @@ export const AIAssistantPage = () => {
           Your personal financial advisor powered by AI
         </p>
       </div>
+
+      {/* Backend error toast */}
+      {errorToast && (
+        <div className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200 flex items-start justify-between gap-2">
+          <span className="pr-2">{errorToast}</span>
+          <button
+            type="button"
+            onClick={() => setErrorToast(null)}
+            className="ml-1 text-red-300 hover:text-red-100"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* Chat container */}
       <div className="flex-1 bg-gray-900 rounded-2xl border border-gray-800 flex flex-col overflow-hidden min-h-0">
