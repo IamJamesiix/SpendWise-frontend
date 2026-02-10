@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "./AuthContext";
@@ -44,10 +44,22 @@ const extractUserFromSession = (result) => {
 export const AuthLoader = ({ children }) => {
   const { user, login } = useAuth();
 
+  const shouldForceSessionCheck = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const search = window.location.search || "";
+    const oauthFlag = search.includes("oauth=success");
+    const inProgress =
+      window.sessionStorage.getItem("oauthInProgress") === "true";
+    return oauthFlag || inProgress;
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ["session"],
     queryFn: api.checkSession,
-    enabled: !user,
+    // Always run on OAuth return, or when we don't yet have a user
+    enabled: !user || shouldForceSessionCheck,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -57,10 +69,13 @@ export const AuthLoader = ({ children }) => {
     if (userFromSession) {
       login(buildUserData(userFromSession));
 
-      // Clean up ?oauth=success and similar noise from the URL
-      const path = window.location.pathname || "/";
-      const cleanUrl = path + window.location.hash;
-      window.history.replaceState({}, document.title, cleanUrl);
+      if (typeof window !== "undefined") {
+        // Clear temporary OAuth flag and clean URL (remove ?oauth=success)
+        window.sessionStorage.removeItem("oauthInProgress");
+        const path = window.location.pathname || "/";
+        const cleanUrl = path + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
     }
   }, [data, user, login]);
 
