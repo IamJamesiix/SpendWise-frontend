@@ -9,9 +9,10 @@ export const TaxesPage = () => {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(null);
   const [newTax, setNewTax] = useState({
-    description: "",
+    title: "",
     amount: "",
-    category: "",
+    taxType: "Other",
+    dueDate: "",
   });
 
   const loadTaxes = async () => {
@@ -267,6 +268,47 @@ export const TaxesPage = () => {
                   }
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Tax Type
+              </label>
+              <select
+                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm outline-none"
+                value={newTax.taxType}
+                onChange={(e) =>
+                  setNewTax({ ...newTax, taxType: e.target.value })
+                }
+              >
+                {[
+                  "PAYE",
+                  "Personal Income Tax",
+                  "Business Tax",
+                  "VAT",
+                  "Levy",
+                  "Government Fee",
+                  "Other",
+                ].map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                Due Date
+              </label>
+              <input
+                type="date"
+                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm outline-none"
+                value={newTax.dueDate}
+                onChange={(e) =>
+                  setNewTax({ ...newTax, dueDate: e.target.value })
+                }
+              />
             </div>
 
             <div className="px-6 py-4 border-t border-gray-800 flex gap-3">

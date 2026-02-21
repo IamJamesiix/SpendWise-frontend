@@ -56,10 +56,9 @@ export const ChatPage = () => {
   };
 
   const getInitials = (contact) => {
-    const f = contact?.firstName?.[0] || "";
-    const l = contact?.lastName?.[0] || "";
-    return (f + l).toUpperCase() || "?";
-  };
+  const name = contact?.fullName || contact?.userName || "?";
+  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+};
 
   return (
     <div className="fade-in flex flex-col h-[calc(100vh-8rem)]">
@@ -116,7 +115,7 @@ export const ChatPage = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {contact.firstName} {contact.lastName}
+                        {contact.fullName || contact.userName}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
                         {contact.email || "Tap to message"}
@@ -180,7 +179,7 @@ export const ChatPage = () => {
                               : "bg-gray-800 text-gray-200 border border-gray-700 rounded-tl-md"
                           }`}
                         >
-                          {msg.message}
+                          {msg.text}
                         </div>
                       </div>
                     );

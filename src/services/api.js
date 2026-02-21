@@ -117,7 +117,7 @@ const api = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ text: message }),
       });
       return await response.json();
     } catch (error) {
@@ -156,7 +156,7 @@ const api = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ text: message }),
       });
       return await response.json();
     } catch (error) {

@@ -5,11 +5,7 @@ import { api } from "../services/api";
 export const BudgetsPage = ({ budgets, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [newBudget, setNewBudget] = useState({
-    name: "",
-    amount: "",
-    category: "",
-  });
+  const [newBudget, setNewBudget] = useState({ title: "", amount: "", purpose: "monthly" });
 
   const handleCreate = async () => {
     if (!newBudget.name || !newBudget.amount) return;
