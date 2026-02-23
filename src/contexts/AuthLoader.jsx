@@ -57,25 +57,32 @@ export const AuthLoader = ({ children }) => {
     queryKey: ["session"],
     queryFn: api.checkSession,
     // Always run on OAuth return, or when we don't yet have a user
-    enabled: !user || shouldForceSessionCheck,
+enabled: shouldForceSessionCheck ? true : !user,
     refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-  if (!data || user) return;
+ useEffect(() => {
+  if (!data) return;
+  if (user) {
+    // already logged in, just clean up URL
+    if (window.location.search.includes("oauth=success")) {
+      window.history.replaceState({}, document.title, "/");
+    }
+    return;
+  }
+
   const userFromSession = extractUserFromSession(data);
   if (userFromSession) {
     login(buildUserData(userFromSession));
     window.sessionStorage.removeItem("oauthInProgress");
     window.history.replaceState({}, document.title, "/");
-  } else if (shouldForceSessionCheck) {
-    // Cookie might not be stored yet — retry once after short delay
-    setTimeout(() => {
-      window.location.replace("/");
-    }, 500);
+  } else {
+    // failed — just clean up, don't reload
+    window.sessionStorage.removeItem("oauthInProgress");
+    window.history.replaceState({}, document.title, "/");
   }
-}, [data, user, login]);
+}, [data]);
 
   if (!user && isLoading) {
     return (

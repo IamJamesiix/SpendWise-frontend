@@ -120,6 +120,16 @@ export const OTPPage = ({ email, onVerified }) => {
           <br />
           <span className="font-semibold text-white">{email}</span>
         </p>
+        <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-left">
+          <p className="text-yellow-400 text-xs">
+            ⚠️ Can't find the email? Check your{" "}
+            <span className="font-semibold">spam or junk folder</span>.
+          </p>
+          <p className="text-gray-400 text-xs mt-1">
+            ⏱ This code expires in{" "}
+            <span className="font-semibold text-white">5 minutes</span>.
+          </p>
+        </div>
       </div>
 
       {error && (
