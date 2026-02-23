@@ -63,21 +63,19 @@ export const AuthLoader = ({ children }) => {
   });
 
   useEffect(() => {
-    if (!data || user) return;
-
-    const userFromSession = extractUserFromSession(data);
-    if (userFromSession) {
-      login(buildUserData(userFromSession));
-
-      if (typeof window !== "undefined") {
-        // Clear temporary OAuth flag and clean URL (remove ?oauth=success)
-        window.sessionStorage.removeItem("oauthInProgress");
-        const path = window.location.pathname || "/";
-        const cleanUrl = path + window.location.hash;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-    }
-  }, [data, user, login]);
+  if (!data || user) return;
+  const userFromSession = extractUserFromSession(data);
+  if (userFromSession) {
+    login(buildUserData(userFromSession));
+    window.sessionStorage.removeItem("oauthInProgress");
+    window.history.replaceState({}, document.title, "/");
+  } else if (shouldForceSessionCheck) {
+    // Cookie might not be stored yet — retry once after short delay
+    setTimeout(() => {
+      window.location.replace("/");
+    }, 500);
+  }
+}, [data, user, login]);
 
   if (!user && isLoading) {
     return (

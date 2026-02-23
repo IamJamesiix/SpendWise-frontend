@@ -74,17 +74,20 @@ const api = {
   },
 
   logout: async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      return await response.json();
-    } catch (error) {
-      return { success: false, message: "Failed to logout" };
-    }
-  },
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  return await response.json();
+},
+
+deleteAccount: async () => {
+  const response = await fetch(`${API_BASE_URL}/auth/deleteAccount`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return await response.json();
+},
 
   getBudget: async () => {
     try {
@@ -111,22 +114,25 @@ const api = {
     }
   },
 
+  addExpense: async (data) => {
+  const response = await fetch(`${API_BASE_URL}/budget/addExpense`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  return await response.json();
+},
+
   chatWithAI: async (message) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/chat/ai`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ text: message }),
-      });
-      return await response.json();
-    } catch (error) {
-      return {
-        success: true,
-        response: "Sorry, I encountered an error. Please try again.",
-      };
-    }
-  },
+  const response = await fetch(`${API_BASE_URL}/chat/ai`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ message }), // ← was { text: message }
+  });
+  return await response.json();
+},
 
   getContacts: async () => {
     try {
@@ -150,19 +156,30 @@ const api = {
     }
   },
 
-  sendMessage: async (userId, message) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/chat/${userId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ text: message }),
-      });
-      return await response.json();
-    } catch (error) {
-      return { success: false, message: "Failed to send message" };
-    }
-  },
+  sendMessage: async (userId, message, image = null) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        text: message || "",
+        ...(image && { image }),
+      }),
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: "Failed to send message" };
+  }
+},
+
+
+  getChatHistory: async () => {
+  const response = await fetch(`${API_BASE_URL}/chat/history`, {
+    credentials: "include",
+  });
+  return await response.json();
+},
 
   addTax: async (data) => {
     try {
@@ -189,6 +206,16 @@ const api = {
     }
   },
 
+  updateTax: async (id, data) => {
+  const response = await fetch(`${API_BASE_URL}/tax/updateTax/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  return await response.json();
+},
+
   deleteTax: async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/tax/deleteTax/${id}`, {
@@ -200,6 +227,20 @@ const api = {
       return { success: false, message: "Failed to delete tax" };
     }
   },
+
+  updateProfile: async (data) => {
+  const response = await fetch(`${API_BASE_URL}/auth/updateProfile`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  return await response.json();
+},
+
+
 };
+
+
 
 export { api, API_BASE_URL };

@@ -94,7 +94,7 @@ export const HomePage = ({ budgets }) => {
             <span>Dashboard Overview</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            {getGreeting()}, {user?.firstName || "User"}!
+           {getGreeting()}, {user?.fullName?.split(" ")?.[0] || user?.userName || "User"}!
           </h1>
           <p className="text-purple-200 text-sm sm:text-base max-w-lg">
             {budgets.length > 0

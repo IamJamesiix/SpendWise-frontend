@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Wallet,
-  LogOut,
-  Home,
-  DollarSign,
-  FileText,
-  Brain,
-  MessageCircle,
-  User,
-  Menu,
-  X,
-  ChevronRight,
+  Wallet, LogOut, Home, DollarSign, FileText,
+  Brain, MessageCircle, User, Menu, X, ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -79,15 +70,35 @@ export const Dashboard = () => {
     { id: "profile", label: "Profile", icon: User },
   ];
 
+  // ✅ Use fullName since that's what the model stores
   const getInitials = () => {
-    const first = user?.firstName?.[0] || "";
-    const last = user?.lastName?.[0] || "";
-    return (first + last).toUpperCase() || "U";
+    const name = user?.fullName || user?.userName || "U";
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  };
+
+  const getFirstName = () => {
+    return user?.fullName?.split(" ")?.[0] || user?.userName || "User";
   };
 
   const getPageTitle = () => {
     const item = navItems.find((n) => n.id === currentPage);
     return item ? item.label : "Dashboard";
+  };
+
+  // ✅ Reusable avatar component — shows profile pic if available
+  const Avatar = ({ size = "sm" }) => {
+    const sizeClass = size === "lg" ? "w-9 h-9 text-sm" : "w-8 h-8 text-xs";
+    return user?.profilePic ? (
+      <img
+        src={user.profilePic}
+        alt="Profile"
+        className={`${sizeClass} rounded-full object-cover shrink-0`}
+      />
+    ) : (
+      <div className={`${sizeClass} rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shrink-0`}>
+        {getInitials()}
+      </div>
+    );
   };
 
   return (
@@ -101,25 +112,16 @@ export const Dashboard = () => {
       )}
 
       {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-gray-900 border-r border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+      <aside className={`fixed top-0 left-0 z-50 h-full w-72 bg-gray-900 border-r border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Logo */}
         <div className="flex items-center justify-between px-6 h-16 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-xl shadow-lg shadow-purple-500/20">
               <Wallet className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-white tracking-tight">
-              SpendWise
-            </span>
+            <span className="text-lg font-bold text-white tracking-tight">SpendWise</span>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 text-gray-400 hover:text-white rounded-lg transition-colors"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1 text-gray-400 hover:text-white rounded-lg transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -138,35 +140,23 @@ export const Dashboard = () => {
                     : "text-gray-400 hover:text-white hover:bg-gray-800/60"
                 }`}
               >
-                <item.icon
-                  className={`w-5 h-5 transition-colors ${
-                    isActive
-                      ? "text-purple-400"
-                      : "text-gray-500 group-hover:text-gray-300"
-                  }`}
-                />
+                <item.icon className={`w-5 h-5 transition-colors ${isActive ? "text-purple-400" : "text-gray-500 group-hover:text-gray-300"}`} />
                 <span>{item.label}</span>
-                {isActive && (
-                  <ChevronRight className="w-4 h-4 ml-auto text-purple-400" />
-                )}
+                {isActive && <ChevronRight className="w-4 h-4 ml-auto text-purple-400" />}
               </button>
             );
           })}
         </nav>
 
-        {/* User section at bottom */}
+        {/* ✅ User section — shows profile pic */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
           <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-800/50">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
-              {getInitials()}
-            </div>
+            <Avatar size="lg" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
-                {user?.firstName || "User"} {user?.lastName || ""}
+                {user?.fullName || user?.userName || "User"}
               </p>
-              <p className="text-xs text-gray-500 truncate">
-                {user?.email || "user@email.com"}
-              </p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             </div>
             <button
               onClick={() => setShowLogoutConfirm(true)}
@@ -191,20 +181,17 @@ export const Dashboard = () => {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div>
-                <h1 className="text-lg font-semibold text-white">
-                  {getPageTitle()}
-                </h1>
-              </div>
+              <h1 className="text-lg font-semibold text-white">{getPageTitle()}</h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:block text-sm text-gray-400 mr-2">
-                Hi, {user?.firstName || "User"}!
+            {/* ✅ Top right avatar — clickable to go to profile */}
+            <div className="flex items-center gap-3">
+              <span className="hidden sm:block text-sm text-gray-400">
+                Hi, {getFirstName()}!
               </span>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold lg:hidden">
-                {getInitials()}
-              </div>
+              <button onClick={() => navigateTo("profile")} className="lg:hidden">
+                <Avatar size="sm" />
+              </button>
             </div>
           </div>
         </header>
@@ -213,9 +200,7 @@ export const Dashboard = () => {
         <main className="p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {currentPage === "homepage" && <HomePage budgets={budgets} />}
-            {currentPage === "budgets" && (
-              <BudgetsPage budgets={budgets} onRefresh={loadBudgets} />
-            )}
+            {currentPage === "budgets" && <BudgetsPage budgets={budgets} onRefresh={loadBudgets} />}
             {currentPage === "taxes" && <TaxesPage />}
             {currentPage === "ai-assistant" && <AIAssistantPage />}
             {currentPage === "messages" && <ChatPage />}
@@ -230,35 +215,19 @@ export const Dashboard = () => {
           <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-sm">
             <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">Log out</h2>
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-              >
+              <button onClick={() => setShowLogoutConfirm(false)} className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="px-6 py-5 space-y-3">
-              <p className="text-sm text-gray-300">
-                Are you sure you want to log out of your SpendWise account?
-              </p>
-              <p className="text-xs text-gray-500">
-                You'll need to sign in again to access your dashboard and
-                financial data.
-              </p>
+              <p className="text-sm text-gray-300">Are you sure you want to log out of your SpendWise account?</p>
+              <p className="text-xs text-gray-500">You'll need to sign in again to access your dashboard.</p>
             </div>
             <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                disabled={loggingOut}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors disabled:opacity-60"
-              >
+              <button onClick={() => setShowLogoutConfirm(false)} disabled={loggingOut} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors disabled:opacity-60">
                 Cancel
               </button>
-              <button
-                onClick={handleLogoutConfirm}
-                disabled={loggingOut}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-xl transition-colors disabled:opacity-60"
-              >
+              <button onClick={handleLogoutConfirm} disabled={loggingOut} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-xl transition-colors disabled:opacity-60">
                 {loggingOut ? "Logging out..." : "Log out"}
               </button>
             </div>
