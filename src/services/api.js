@@ -4,7 +4,7 @@ const API_BASE_URL =
 const api = {
   checkSession: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const response = await fetch(`${API_BASE_URL}/cny/auth/me`, {
         credentials: "include",
       });
       if (!response.ok) return { authenticated: false };
@@ -17,7 +17,7 @@ const api = {
 
   signup: async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      const response = await fetch(`${API_BASE_URL}/cny/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -31,7 +31,7 @@ const api = {
 
   verifyEmail: async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+      const response = await fetch(`${API_BASE_URL}/cny/auth/verify-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -46,7 +46,7 @@ const api = {
 
   resendOTP: async (email) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+      const response = await fetch(`${API_BASE_URL}/cny/auth/resend-verification`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -60,7 +60,7 @@ const api = {
 
   login: async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/cny/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -74,7 +74,7 @@ const api = {
   },
 
   logout: async () => {
-  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+  const response = await fetch(`${API_BASE_URL}/cny/auth/logout`, {
     method: "POST",
     credentials: "include",
   });
@@ -82,7 +82,7 @@ const api = {
 },
 
 deleteAccount: async () => {
-  const response = await fetch(`${API_BASE_URL}/auth/deleteAccount`, {
+  const response = await fetch(`${API_BASE_URL}/cny/auth/deleteAccount`, {
     method: "DELETE",
     credentials: "include",
   });
