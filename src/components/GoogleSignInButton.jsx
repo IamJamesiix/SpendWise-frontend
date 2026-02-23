@@ -7,7 +7,7 @@ export const GoogleSignInButton = ({ text = "Continue with Google" }) => {
   const handleGoogleLogin = () => {
     setLoading(true);
     sessionStorage.setItem("oauthInProgress", "true");
-    window.location.href = `${API_BASE_URL}/auth/oauth/login`;
+    window.location.href = `${API_BASE_URL}/cny/auth/oauth/login`;
   };
 
   return (
