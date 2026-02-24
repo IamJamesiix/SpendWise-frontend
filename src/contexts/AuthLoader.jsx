@@ -30,6 +30,18 @@ export const AuthLoader = ({ children }) => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ Extract token from URL for OAuth cross-domain fix
+  // Backend sends: /?oauth=success&token=xxx
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      sessionStorage.setItem("authToken", token);
+      // Clean token from URL immediately for security
+      window.history.replaceState({}, document.title, "/?oauth=success");
+    }
+  }, []);
+
   const isOAuthReturn = useMemo(() => {
     if (typeof window === "undefined") return false;
     return (
@@ -62,8 +74,7 @@ export const AuthLoader = ({ children }) => {
 
     if (userFromSession) {
       login(buildUserData(userFromSession));
-      window.history.replaceState({}, document.title, "/dashboard");
-      // ✅ Navigate to dashboard after OAuth login
+      window.history.replaceState({}, document.title, "/");
       if (isOAuthReturn) {
         navigate("/dashboard", { replace: true });
       }
