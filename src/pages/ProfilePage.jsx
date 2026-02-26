@@ -8,6 +8,26 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../services/api";
 
+const CURRENCY_SYMBOLS = { NGN: "₦", USD: "$", EUR: "€", GBP: "£" };
+const getSymbol = (currency) => CURRENCY_SYMBOLS[currency] || "₦";
+
+// Format total budgeted — if mixed currencies, group by currency
+const formatTotalBudget = (budgets) => {
+  if (budgets.length === 0) return "₦0";
+  const currencies = [...new Set(budgets.map((b) => b.currency || "NGN"))];
+  if (currencies.length === 1) {
+    const sym = getSymbol(currencies[0]);
+    const total = budgets.reduce((s, b) => s + (b.amount || 0), 0);
+    return `${sym}${total.toLocaleString()}`;
+  }
+  // Mixed — show each currency separately
+  return currencies.map((c) => {
+    const sym = getSymbol(c);
+    const total = budgets.filter((b) => (b.currency || "NGN") === c).reduce((s, b) => s + (b.amount || 0), 0);
+    return `${sym}${total.toLocaleString()}`;
+  }).join(" + ");
+};
+
 export const ProfilePage = () => {
   const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
@@ -15,7 +35,7 @@ export const ProfilePage = () => {
   const fileInputRef = useRef(null);
 
   const [stats, setStats] = useState({
-    budgetsCount: 0, taxesCount: 0, totalBudget: 0, totalTax: 0,
+    budgetsCount: 0, taxesCount: 0, budgetsList: [], totalTax: 0,
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -35,11 +55,11 @@ export const ProfilePage = () => {
         setStats({
           budgetsCount: budgetsList.length,
           taxesCount: taxesList.length,
-          totalBudget: budgetsList.reduce((s, b) => s + (b.amount || 0), 0),
+          budgetsList,
           totalTax: taxesList.reduce((s, t) => s + (Number(t.amount) || 0), 0),
         });
       } catch {
-        setStats({ budgetsCount: 0, taxesCount: 0, totalBudget: 0, totalTax: 0 });
+        setStats({ budgetsCount: 0, taxesCount: 0, budgetsList: [], totalTax: 0 });
       } finally {
         setLoadingStats(false);
       }
@@ -48,14 +68,9 @@ export const ProfilePage = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await api.logout();
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      logout();
-      navigate("/", { replace: true });
-    }
+    try { await api.logout(); } catch {}
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handleFileChange = async (e) => {
@@ -73,7 +88,6 @@ export const ProfilePage = () => {
           setUser((prev) => ({ ...prev, profilePic: result.profilePic }));
         }
       } catch (err) {
-        console.error("Upload failed", err);
         alert("Failed to upload image. Please try again.");
       } finally {
         setUploading(false);
@@ -83,7 +97,6 @@ export const ProfilePage = () => {
     e.target.value = "";
   };
 
-  // ✅ Clears all cached query data + auth state before navigating away
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
@@ -91,8 +104,7 @@ export const ProfilePage = () => {
       queryClient.clear();
       logout();
       navigate("/", { replace: true });
-    } catch (err) {
-      console.error("Delete failed", err);
+    } catch {
       alert("Failed to delete account. Please try again.");
     } finally {
       setDeleting(false);
@@ -109,7 +121,6 @@ export const ProfilePage = () => {
 
   return (
     <div className="space-y-6 fade-in">
-      {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-white">Profile</h1>
         <p className="text-gray-400 text-sm mt-1">Your account information at a glance</p>
@@ -120,18 +131,14 @@ export const ProfilePage = () => {
         <div className="relative z-0 h-32 sm:h-44 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600">
           <div className="absolute -top-12 -left-12 w-40 h-40 bg-white/5 rounded-full" />
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/[0.04] rounded-full" />
         </div>
-
         <div className="px-5 sm:px-8 pb-6 pt-4">
           <div className="flex items-center gap-4 sm:gap-5 relative">
             <div className="relative z-10 -mt-12 sm:-mt-14 shrink-0">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white border-4 border-gray-900 shadow-xl shadow-purple-500/20">
                 {user?.profilePic ? (
                   <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  initials
-                )}
+                ) : initials}
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -146,7 +153,6 @@ export const ProfilePage = () => {
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </div>
-
             <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-bold text-white truncate">{fullName}</h2>
               <p className="text-sm text-gray-400 truncate">
@@ -222,13 +228,14 @@ export const ProfilePage = () => {
             <p className="text-xs text-gray-500 mt-1">saved entries</p>
           </div>
 
+          {/* ✅ Fixed — shows correct currency per budget, handles mixed currencies */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
             <div className="bg-emerald-500/15 p-2 rounded-xl w-fit mb-3">
               <DollarSign className="w-4 h-4 text-emerald-400" />
             </div>
             <p className="text-xs text-gray-500 mb-1">Total Budgeted</p>
-            <p className="text-2xl sm:text-3xl font-bold text-emerald-400">
-              {loadingStats ? "..." : `₦${stats.totalBudget.toLocaleString()}`}
+            <p className="text-lg sm:text-xl font-bold text-emerald-400 break-all leading-tight">
+              {loadingStats ? "..." : formatTotalBudget(stats.budgetsList)}
             </p>
             <p className="text-xs text-gray-500 mt-1">across all budgets</p>
           </div>
@@ -238,7 +245,7 @@ export const ProfilePage = () => {
               <FileText className="w-4 h-4 text-amber-400" />
             </div>
             <p className="text-xs text-gray-500 mb-1">Total Tax</p>
-            <p className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <p className="text-lg sm:text-xl font-bold text-amber-400">
               {loadingStats ? "..." : `₦${stats.totalTax.toLocaleString()}`}
             </p>
             <p className="text-xs text-gray-500 mt-1">recorded amount</p>
@@ -265,9 +272,7 @@ export const ProfilePage = () => {
       <div className="bg-gray-900 rounded-2xl border border-red-500/20 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold text-red-400">Danger Zone</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Permanently delete your account and all associated data. This cannot be undone.
-          </p>
+          <p className="text-xs text-gray-500 mt-0.5">Permanently delete your account and all associated data.</p>
         </div>
         <button
           onClick={() => setShowDeleteModal(true)}
@@ -280,12 +285,10 @@ export const ProfilePage = () => {
 
       {/* Logout modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <h3 className="text-lg font-semibold text-white mb-2">Log out of SpendWise?</h3>
-            <p className="text-xs text-gray-400 mb-5">
-              You'll need to sign in again to access your budgets, tax records, and AI assistant.
-            </p>
+            <p className="text-xs text-gray-400 mb-5">You'll need to sign in again to access your dashboard.</p>
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowLogoutModal(false)} className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors">
                 Cancel
@@ -302,7 +305,7 @@ export const ProfilePage = () => {
         </div>
       )}
 
-      {/* Delete account modal */}
+      {/* Delete modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-sm shadow-2xl">
