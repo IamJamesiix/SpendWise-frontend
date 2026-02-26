@@ -176,6 +176,20 @@ const api = {
     }
   },
 
+  // ✅ Returns only users you've messaged before
+  getChatPartners: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat/partners`, {
+        credentials: "include",
+        headers: { ...getAuthHeader() },
+      });
+      return await response.json();
+    } catch (error) {
+      return [];
+    }
+  },
+
+  // Returns ALL users (for new conversation search)
   getContacts: async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat/contacts`, {

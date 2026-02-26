@@ -39,15 +39,10 @@ export const Dashboard = () => {
   const handleLogoutConfirm = async () => {
     setLoggingOut(true);
     try {
-      const result = await api.logout();
-      if (result?.error) {
-        toast.error(result.error || "Failed to log out");
-      } else {
-        toast.success("Logged out");
-      }
+      await api.logout();
+      toast.success("Logged out");
     } catch (err) {
       console.error("Logout error:", err);
-      toast.error("Failed to log out");
     } finally {
       logout();
       setLoggingOut(false);
@@ -70,7 +65,6 @@ export const Dashboard = () => {
     { id: "profile", label: "Profile", icon: User },
   ];
 
-  // ✅ Use fullName since that's what the model stores
   const getInitials = () => {
     const name = user?.fullName || user?.userName || "U";
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
@@ -85,7 +79,6 @@ export const Dashboard = () => {
     return item ? item.label : "Dashboard";
   };
 
-  // ✅ Reusable avatar component — shows profile pic if available
   const Avatar = ({ size = "sm" }) => {
     const sizeClass = size === "lg" ? "w-9 h-9 text-sm" : "w-8 h-8 text-xs";
     return user?.profilePic ? (
@@ -103,17 +96,11 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-950">
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`fixed top-0 left-0 z-50 h-full w-72 bg-gray-900 border-r border-gray-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        {/* Logo */}
         <div className="flex items-center justify-between px-6 h-16 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-xl shadow-lg shadow-purple-500/20">
@@ -126,7 +113,6 @@ export const Dashboard = () => {
           </button>
         </div>
 
-        {/* Navigation */}
         <nav className="px-3 py-4 space-y-1 flex-1">
           {navItems.map((item) => {
             const isActive = currentPage === item.id;
@@ -148,7 +134,6 @@ export const Dashboard = () => {
           })}
         </nav>
 
-        {/* ✅ User section — shows profile pic */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
           <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-800/50">
             <Avatar size="lg" />
@@ -169,9 +154,7 @@ export const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main content area */}
       <div className="lg:ml-72 min-h-screen">
-        {/* Top navbar */}
         <header className="sticky top-0 z-30 h-16 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800/50">
           <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-4">
@@ -183,20 +166,17 @@ export const Dashboard = () => {
               </button>
               <h1 className="text-lg font-semibold text-white">{getPageTitle()}</h1>
             </div>
-
-            {/* ✅ Top right avatar — clickable to go to profile */}
             <div className="flex items-center gap-3">
               <span className="hidden sm:block text-sm text-gray-400">
                 Hi, {getFirstName()}!
               </span>
-              <button onClick={() => navigateTo("profile")} className="lg:hidden">
+              <button onClick={() => navigateTo("profile")} className="rounded-full">
                 <Avatar size="sm" />
               </button>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {currentPage === "homepage" && <HomePage budgets={budgets} />}
@@ -209,7 +189,6 @@ export const Dashboard = () => {
         </main>
       </div>
 
-      {/* Logout confirmation modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-sm">
@@ -220,7 +199,7 @@ export const Dashboard = () => {
               </button>
             </div>
             <div className="px-6 py-5 space-y-3">
-              <p className="text-sm text-gray-300">Are you sure you want to log out of your SpendWise account?</p>
+              <p className="text-sm text-gray-300">Are you sure you want to log out?</p>
               <p className="text-xs text-gray-500">You'll need to sign in again to access your dashboard.</p>
             </div>
             <div className="px-6 py-4 border-t border-gray-800 flex gap-3">

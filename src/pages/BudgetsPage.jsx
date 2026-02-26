@@ -5,11 +5,16 @@ import { api } from "../services/api";
 const PURPOSES = ["monthly", "event", "travel", "savings", "education", "business", "emergency"];
 const CURRENCIES = ["NGN", "USD", "EUR", "GBP"];
 
+// ✅ Fix 1 — currency code → symbol
+const CURRENCY_SYMBOLS = { NGN: "₦", USD: "$", EUR: "€", GBP: "£" };
+const getSymbol = (currency) => CURRENCY_SYMBOLS[currency] || "₦";
+
 export const BudgetsPage = ({ budgets, onRefresh }) => {
   const [showModal, setShowModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [newBudget, setNewBudget] = useState({
     title: "",
@@ -25,15 +30,25 @@ export const BudgetsPage = ({ budgets, onRefresh }) => {
   });
 
   const handleCreate = async () => {
-if (!newBudget.title || !newBudget.amount) return;
+    if (!newBudget.title || !newBudget.amount) return;
     setLoading(true);
+    setError("");
     try {
-      await api.setBudget(newBudget);
+      const result = await api.setBudget({
+        ...newBudget,
+        amount: Number(newBudget.amount),
+      });
+      // ✅ Fix 2 — handle error response from backend
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
       setShowModal(false);
       setNewBudget({ title: "", amount: "", purpose: "monthly", currency: "NGN", notes: "" });
       onRefresh();
     } catch (err) {
-      console.error("Failed to create budget");
+      setError("Failed to create budget. Please try again.");
+      console.error("Failed to create budget", err);
     } finally {
       setLoading(false);
     }
@@ -75,12 +90,12 @@ if (!newBudget.title || !newBudget.amount) return;
           <h1 className="text-2xl sm:text-3xl font-bold text-white">My Budgets</h1>
           <p className="text-gray-400 text-sm mt-1">
             {budgets.length > 0
-              ? `${budgets.length} budget${budgets.length !== 1 ? "s" : ""} totaling ₦${totalBudget.toLocaleString()}`
+              ? `${budgets.length} budget${budgets.length !== 1 ? "s" : ""}`
               : "Create budgets to track your spending"}
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => { setShowModal(true); setError(""); }}
           className="bg-purple-600 hover:bg-purple-500 text-white font-medium px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors text-sm shrink-0 w-fit"
         >
           <Plus className="w-4 h-4" />
@@ -110,6 +125,7 @@ if (!newBudget.title || !newBudget.amount) return;
       {budgets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {budgets.map((budget, idx) => {
+            const symbol = getSymbol(budget.currency); // ✅ use symbol
             const pct = budget.amount
               ? Math.min(Math.round(((budget.spent || 0) / budget.amount) * 100), 100)
               : 0;
@@ -121,11 +137,10 @@ if (!newBudget.title || !newBudget.amount) return;
                 key={budget._id || idx}
                 className="bg-gray-900 rounded-2xl border border-gray-800 p-5 hover:border-gray-700 transition-all duration-200 group"
               >
-                {/* Card header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-white truncate">{budget.title}</h3>
-                    <p className="text-xs text-gray-500 mt-0.5 capitalize">{budget.purpose || "monthly"}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 capitalize">{budget.purpose || "monthly"} · {budget.currency || "NGN"}</p>
                   </div>
                   {isOver && (
                     <div className="bg-red-500/15 p-1.5 rounded-lg shrink-0 ml-2">
@@ -134,14 +149,13 @@ if (!newBudget.title || !newBudget.amount) return;
                   )}
                 </div>
 
-                {/* Amounts */}
                 <div className="flex items-end justify-between mb-3">
                   <div>
                     <p className="text-2xl font-bold text-white">
-                      {budget.currency || "₦"}{(budget.spent || 0).toLocaleString()}
+                      {symbol}{(budget.spent || 0).toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-500">
-                      of {budget.currency || "₦"}{budget.amount?.toLocaleString()} budgeted
+                      of {symbol}{budget.amount?.toLocaleString()} budgeted
                     </p>
                   </div>
                   <span className={`text-sm font-semibold px-2.5 py-1 rounded-lg ${
@@ -153,7 +167,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   </span>
                 </div>
 
-                {/* Progress bar */}
                 <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
                   <div
                     className={`h-2 rounded-full transition-all duration-700 ease-out ${
@@ -163,12 +176,10 @@ if (!newBudget.title || !newBudget.amount) return;
                   />
                 </div>
 
-                {/* Remaining */}
                 <p className="text-xs text-gray-500 mb-3">
-                  {budget.currency || "₦"}{((budget.amount || 0) - (budget.spent || 0)).toLocaleString()} remaining
+                  {symbol}{((budget.amount || 0) - (budget.spent || 0)).toLocaleString()} remaining
                 </p>
 
-                {/* Log expense button */}
                 <button
                   onClick={() => openExpenseModal(budget)}
                   className="w-full text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 hover:border-purple-500 rounded-lg py-2 transition-colors"
@@ -210,6 +221,11 @@ if (!newBudget.title || !newBudget.amount) return;
             </div>
 
             <div className="px-6 py-5 space-y-4">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Budget Title</label>
                 <input
@@ -220,7 +236,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   onChange={(e) => setNewBudget({ ...newBudget, title: e.target.value })}
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Amount</label>
                 <input
@@ -231,7 +246,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })}
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Purpose</label>
                 <select
@@ -244,7 +258,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Currency</label>
                 <select
@@ -253,11 +266,10 @@ if (!newBudget.title || !newBudget.amount) return;
                   onChange={(e) => setNewBudget({ ...newBudget, currency: e.target.value })}
                 >
                   {CURRENCIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>{c} ({getSymbol(c)})</option>
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Notes (optional)</label>
                 <input
@@ -311,7 +323,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Amount</label>
                 <input
@@ -322,8 +333,6 @@ if (!newBudget.title || !newBudget.amount) return;
                   onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
                 />
               </div>
-
-              {/* Remaining preview */}
               {newExpense.amount && (
                 <div className="bg-gray-800 rounded-xl p-3 text-sm">
                   <p className="text-gray-400">
@@ -332,7 +341,7 @@ if (!newBudget.title || !newBudget.amount) return;
                       (selectedBudget.amount - (selectedBudget.spent || 0) - Number(newExpense.amount)) < 0
                         ? "text-red-400" : "text-emerald-400"
                     }`}>
-                      {selectedBudget.currency || "₦"}{Math.abs(selectedBudget.amount - (selectedBudget.spent || 0) - Number(newExpense.amount)).toLocaleString()}
+                      {getSymbol(selectedBudget.currency)}{Math.abs(selectedBudget.amount - (selectedBudget.spent || 0) - Number(newExpense.amount)).toLocaleString()}
                     </span>
                     {" "}{(selectedBudget.amount - (selectedBudget.spent || 0) - Number(newExpense.amount)) < 0 ? "over budget" : "remaining"}
                   </p>
